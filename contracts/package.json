@@ -1,0 +1,25 @@
+{
+  "name": "@acme/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "lint": "node -e \"console.log('lint: (skipped)')\"",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@ts-rest/core": "^3.52.0",
+    "@ts-rest/open-api": "^3.52.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  }
+}

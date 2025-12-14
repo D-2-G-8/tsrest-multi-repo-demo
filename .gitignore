@@ -1,0 +1,50 @@
+### Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+### Build output
+dist/
+build/
+.next/
+out/
+coverage/
+/.turbo/
+*.tsbuildinfo
+
+### Env files
+.env
+.env.*
+.env.local
+.env.production.local
+
+### Logs
+logs/
+*.log
+*.log.*
+
+### OS files
+.DS_Store
+Thumbs.db
+
+### IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+/.history/
+
+### TypeScript
+*.d.ts
+
+### Misc
+.cache/
+/.parcel-cache/
+
+# Ignore lockfiles from other package managers that might appear
+pnpm-lock.yaml
+
+# Ignore local env examples and secrets
+.env.example
+.env.local.example
