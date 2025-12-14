@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import { generateOpenApi } from '@ts-rest/open-api';
 import { AppModule } from './app.module';
-import { bffRepoContract } from '@acme/contracts';
+import { authContract } from '@acme/contracts';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,35 +13,27 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const port = Number(process.env.PORT || 3002);
+  const port = Number(process.env.PORT || 3004);
 
-  // Swagger UI generated FROM THE SHARED CONTRACT
   const documentFactory = () =>
     generateOpenApi(
-      bffRepoContract,
+      authContract,
       {
-        info: { title: 'repo', version: '0.1.0' },
+        info: { title: 'auth', version: '0.1.0' },
         servers: [{ url: `http://localhost:${port}` }],
-        components: {
-          securitySchemes: {
-            bearerAuth: { type: 'http', scheme: 'bearer' }
-          }
-        },
-        security: [{ bearerAuth: [] }]
       },
       { setOperationId: true }
     );
 
   SwaggerModule.setup('docs', app, documentFactory);
 
-  // Optional: expose raw OpenAPI JSON
   app.getHttpAdapter().get('/openapi.json', (_req: any, res: any) => {
     res.json(documentFactory());
   });
 
   await app.listen(port);
   // eslint-disable-next-line no-console
-  console.log(`repo listening on http://localhost:${port}`);
+  console.log(`auth listening on http://localhost:${port}`);
   console.log(`Swagger: http://localhost:${port}/docs`);
 }
 

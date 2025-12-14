@@ -11,12 +11,16 @@ export const bffRepoContract = c.router({
     method: 'GET',
     path: '/internal/v1/items/:id',
     pathParams: z.object({ id: z.string().uuid() }),
+    headers: z.object({
+      authorization: z.string().min(1).describe('Bearer token')
+    }),
     responses: {
       200: z.object({
         id: z.string().uuid(),
         title: z.string().min(1),
         priceCents: z.number().int().nonnegative()
       }),
+      401: z.object({ message: z.string() }),
       404: z.object({ message: z.string() })
     },
     summary: 'Repo: get item'

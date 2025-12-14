@@ -4,6 +4,7 @@
 
 ## Состав репозитория
 - `contracts` — единый источник контрактов (`@acme/contracts`), сборка через `tsup`.
+- `auth` — сервис авторизации, выдает и валидирует токены для BFF.
 - `bff` — публичный API для фронтенда, NestJS + `@ts-rest/nest`, генерирует Swagger из контракта.
 - `manager` — внутренний API пользователей, NestJS + `@ts-rest/nest`, Swagger из контракта.
 - `repo` — внутренний API товаров, NestJS + `@ts-rest/nest`, Swagger из контракта.
@@ -22,6 +23,7 @@
         v
    BFF (Nest) -------------------------------------------------------------+
         | TsRestHandler(bffFrontendContract)                              |
+        | initClient(authContract)    -> Auth (Nest, issue/validate token)|
         | initClient(bffManagerContract) -> Manager (Nest, in-memory users)|
         | initClient(bffRepoContract)    -> Repo (Nest, in-memory items)   |
         +------------------------------------------------------------------+
@@ -31,19 +33,22 @@
 
 ## Контракты (источник правды)
 Файлы: `contracts/src/contracts/*.ts` экспортируются из `contracts/src/index.ts`.
-- `bffFrontendContract` (`/v1/...`) — публичные ручки BFF: `GET /users/:id`, `POST /users`, `GET /items/:id`.
+- `bffFrontendContract` (`/v1/...`) — публичные ручки BFF: `POST /auth/login`, `GET /users/:id`, `POST /users`, `GET /items/:id`.
 - `bffManagerContract` (`/internal/v1/users...`) — внутренняя коммуникация BFF → Manager: чтение/создание пользователя.
 - `bffRepoContract` (`/internal/v1/items...`) — внутренняя коммуникация BFF → Repo: чтение товара.
+- `authContract` (`/internal/v1/auth/...`) — внутренняя коммуникация BFF → Auth: выдача токена и проверка валидности.
 
 Контракты описаны zod-схемами, поэтому типы запроса/ответа и валидация данных синхронизированы между клиентом и сервером.
 
 ## Серверная реализация по контракту
 - **BFF** (`bff/src/controller.ts`) подключает `@TsRestHandler(bffFrontendContract)` и реализует маппинг методов `tsRestHandler`, используя `initClient` по внутренним контрактам для проксирования в Manager/Repo.
 - **Manager** (`manager/src/controller.ts`) и **Repo** (`repo/src/controller.ts`) используют те же `@TsRestHandler`/`tsRestHandler` по своим контрактам; тело хендлеров строго типизировано под зод-схемы.
+- **Auth** (`auth/src/controller.ts`) использует `authContract` для выдачи токена (`POST /internal/v1/auth/login`) и проверки валидности (`POST /internal/v1/auth/validate`).
+- **BFF guard** (`bff/src/auth.guard.ts`) проверяет входящие публичные ручки: извлекает токен из cookie/`Authorization` и валидирует через `authContract`; ручка логина исключена из проверки.
 - **Swagger** (`*/src/main.ts`) создается через `generateOpenApi(contract, ...)`, поэтому UI всегда отражает актуальный контракт без дополнительной спецификации.
 
 ## Клиентское использование
-- **Frontend** (`frontend/app/page.tsx`) создает ts-rest клиент `initClient(bffFrontendContract)` с `NEXT_PUBLIC_BFF_URL` и вызывает методы контракта; типы запросов/ответов автоматически выводятся из контракта.
+- **Frontend** (`frontend/app/page.tsx`) создает ts-rest клиент `initClient(bffFrontendContract)` с `NEXT_PUBLIC_BFF_URL`, при инициализации вызывает `POST /v1/auth/login` (логин/пароль `test`/`test`) для получения токена в cookie и далее обращается к публичным ручкам; типы запросов/ответов автоматически выводятся из контракта.
 - **BFF** использует ts-rest клиенты для внутренних вызовов (`bffManagerContract`, `bffRepoContract`), избегая ручного описания DTO.
 
 ## Пошаговый contract-first workflow для новых ручек

@@ -1,7 +1,8 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { initClient } from '@ts-rest/core';
-import { bffFrontendContract, bffManagerContract, bffRepoContract } from '@acme/contracts';
+import { authContract, bffFrontendContract, bffManagerContract, bffRepoContract } from '@acme/contracts';
+import { AuthGuard, resolveToken } from './auth.guard';
 
 const managerClient = initClient(bffManagerContract, {
   baseUrl: process.env.MANAGER_URL || 'http://localhost:3001',
@@ -13,19 +14,34 @@ const repoClient = initClient(bffRepoContract, {
   baseHeaders: {},
 });
 
+const authClient = initClient(authContract, {
+  baseUrl: process.env.AUTH_URL || 'http://localhost:3004',
+  baseHeaders: {},
+});
+
 @Controller()
 export class ApiController {
+  @UseGuards(AuthGuard)
   @TsRestHandler(bffFrontendContract)
   handler() {
     return tsRestHandler(bffFrontendContract, {
-      getUser: async ({ params }) => {
-        return managerClient.getUser({ params });
+      login: async ({ body }) => {
+        return authClient.login({ body });
       },
-      createUser: async ({ body }) => {
-        return managerClient.createUser({ body });
+      getUser: async ({ params, headers }) => {
+        const token = resolveToken(headers);
+        const authorization = headers?.authorization ?? `Bearer ${token}`;
+        return managerClient.getUser({ params, headers: { authorization } });
       },
-      getItem: async ({ params }) => {
-        return repoClient.getItem({ params });
+      createUser: async ({ body, headers }) => {
+        const token = resolveToken(headers);
+        const authorization = headers?.authorization ?? `Bearer ${token}`;
+        return managerClient.createUser({ body, headers: { authorization } });
+      },
+      getItem: async ({ params, headers }) => {
+        const token = resolveToken(headers);
+        const authorization = headers?.authorization ?? `Bearer ${token}`;
+        return repoClient.getItem({ params, headers: { authorization } });
       },
     });
   }

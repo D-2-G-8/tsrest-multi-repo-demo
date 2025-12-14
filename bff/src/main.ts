@@ -22,15 +22,30 @@ async function bootstrap() {
       {
         info: { title: 'bff', version: '0.1.0' },
         servers: [{ url: `http://localhost:${port}` }],
+        components: {
+          securitySchemes: {
+            bearerAuth: { type: 'http', scheme: 'bearer' }
+          }
+        },
+        security: [{ bearerAuth: [] }]
       },
       { setOperationId: true }
     );
 
-  SwaggerModule.setup('docs', app, documentFactory);
+  const documentWithOverrides = () => {
+    const doc = documentFactory();
+    const loginOp = doc.paths?.['/v1/auth/login']?.post;
+    if (loginOp) {
+      loginOp.security = [];
+    }
+    return doc;
+  };
+
+  SwaggerModule.setup('docs', app, documentWithOverrides);
 
   // Optional: expose raw OpenAPI JSON
   app.getHttpAdapter().get('/openapi.json', (_req: any, res: any) => {
-    res.json(documentFactory());
+    res.json(documentWithOverrides());
   });
 
   await app.listen(port);

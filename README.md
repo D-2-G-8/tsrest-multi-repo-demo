@@ -1,7 +1,8 @@
 # Multi-repo contracts demo (Next.js + NestJS + ts-rest)
 
-This bundle contains 5 sibling folders (treat them as separate repos):
+This bundle contains 6 sibling folders (treat them as separate repos):
 - `contracts` — shared API contracts (ts-rest + zod)
+- `auth` — Nest service that issues/validates auth tokens
 - `manager` — Nest service (internal API for BFF)
 - `repo` — Nest service (internal API for BFF)
 - `bff` — Nest service (public API for frontend)
@@ -13,6 +14,14 @@ This bundle contains 5 sibling folders (treat them as separate repos):
 
 ## 1) Install dependencies
 Run these in separate terminals:
+
+### Auth
+```bash
+cd auth
+npm install
+cp .env.example .env
+npm run dev
+```
 
 ### Manager
 ```bash
@@ -50,6 +59,7 @@ npm run dev
 
 ## 2) Verify Swagger UIs (generated from contracts)
 - BFF Swagger: http://localhost:3000/docs
+- Auth Swagger: http://localhost:3004/docs
 - Manager Swagger: http://localhost:3001/docs
 - Repo Swagger: http://localhost:3002/docs
 

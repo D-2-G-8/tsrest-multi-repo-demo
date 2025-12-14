@@ -10,4 +10,4 @@ npm run dev
 Open Swagger UI:
 - http://localhost:3000/docs
 
-This service exposes the public API for the frontend (`/v1/...`) and proxies calls to Manager and Repo services.
+This service exposes the public API for the frontend (`/v1/...`), proxies calls to Manager and Repo services, and requires the Auth service for issuing/validating tokens.

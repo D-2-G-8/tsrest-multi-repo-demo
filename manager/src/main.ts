@@ -22,6 +22,12 @@ async function bootstrap() {
       {
         info: { title: 'manager', version: '0.1.0' },
         servers: [{ url: `http://localhost:${port}` }],
+        components: {
+          securitySchemes: {
+            bearerAuth: { type: 'http', scheme: 'bearer' }
+          }
+        },
+        security: [{ bearerAuth: [] }]
       },
       { setOperationId: true }
     );
